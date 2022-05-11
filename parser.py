@@ -104,10 +104,18 @@ def is_tspecials(octet):
 def is_quoted_string(octet):
     if ord(octet[0]) == 34 and ord(octet[len(octet)-1]) == 34:
         octet_arr = octet[1:len(octet)-1]
+        word = ""
         if len(octet_arr) == 0:
             return True
         for octet in octet_arr:
-            if is_qdtext(octet):
+            if octet == "\\":
+                word += octet
+                continue
+            word +=octet
+            if word == "\r" or word == "\r\\" or word == "\r\n":
+                continue
+            if is_qdtext(word):
+                word = ""
                 continue
             else:
                 return False
@@ -115,6 +123,62 @@ def is_quoted_string(octet):
     return False
 
 def is_qdtext(octet):
-    if ord(octet) == 34:
+    if is_lws(octet): #\r\n\t
+        return True
+    if len(octet) > 1:
         return False
-    return is_text(octet)
+    if ord(octet) == 34: # ""
+        return False
+    if is_ctl(octet):
+        return False 
+    return is_char(octet)
+
+'''
+    HTTP-Version   = "HTTP" "/" 1*DIGIT "." 1*DIGIT
+    URI            = ( absoluteURI | relativeURI ) [ "#" fragment ]
+
+    absoluteURI    = scheme ":" *( uchar | reserved )
+
+    relativeURI    = net_path | abs_path | rel_path
+
+    net_path       = "//" net_loc [ abs_path ]
+    abs_path       = "/" rel_path
+    rel_path       = [ path ] [ ";" params ] [ "?" query ]
+
+    path           = fsegment *( "/" segment )
+    fsegment       = 1*pchar
+    segment        = *pchar
+
+    params         = param *( ";" param )
+    param          = *( pchar | "/" )
+
+    scheme         = 1*( ALPHA | DIGIT | "+" | "-" | "." )
+    net_loc        = *( pchar | ";" | "?" )
+    query          = *( uchar | reserved )
+    fragment       = *( uchar | reserved )
+
+    pchar          = uchar | ":" | "@" | "&" | "=" | "+"
+    uchar          = unreserved | escape
+    unreserved     = ALPHA | DIGIT | safe | extra | national
+
+    escape         = "%" HEX HEX
+    reserved       = ";" | "/" | "?" | ":" | "@" | "&" | "=" | "+"
+    extra          = "!" | "*" | "'" | "(" | ")" | ","
+    safe           = "$" | "-" | "_" | "."
+    unsafe         = CTL | SP | <"> | "#" | "%" | "<" | ">"
+    national       = <any OCTET excluding ALPHA, DIGIT,
+'''
+def is_HTTP_Version(octet):
+    if octet[0:5] != "HTTP/":
+        return False
+    if octet.count(".") > 1:
+        return False
+    for i in range(6, octet.find(".")): 
+        print(octet[i])
+        if is_digit(octet[i]) == False:
+            return False
+    for i in range(octet.find(".")+1,  len(octet)):
+        if is_digit(octet[i]) == False:
+            return False
+    return True
+    

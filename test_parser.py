@@ -1,7 +1,7 @@
 import unittest
 from parser import is_char, is_upalpha, is_loalpha, is_alpha, \
     is_digit, is_ctl, is_ht, is_sp, is_lws, is_text, is_word, \
-    is_token, is_tspecials, is_quoted_string, is_qdtext
+    is_token, is_tspecials, is_quoted_string, is_qdtext, is_HTTP_Version
 
 class TestParser(unittest.TestCase):
     def test_is_char(self):
@@ -92,17 +92,17 @@ class TestParser(unittest.TestCase):
         self.assertFalse(is_text('\x12'))
         self.assertFalse(is_text('\x1c'))
 
-    # def test_is_word(self):
-    #     self.assertTrue(is_word('"foo bar"'))
-    #     self.assertTrue(is_word('"foo@bar"'))
-    #     self.assertTrue(is_word('"foo\r\nbar"'))
-    #     self.assertTrue(is_word('foo!bar'))
-    #     self.assertTrue(is_word('foo%bar'))
-    #     self.assertTrue(is_word('"foo\tbar"'))
+    def test_is_word(self):
+        self.assertTrue(is_word('"foo bar"'))
+        self.assertTrue(is_word('"foo@bar"'))
+        self.assertTrue(is_word('"foo\r\n bar"'))
+        self.assertTrue(is_word('foo!bar'))
+        self.assertTrue(is_word('foo%bar'))
+        self.assertTrue(is_word('"foo\tbar"'))
 
-    #     self.assertFalse(is_word('foo\r\nbar'))
-    #     self.assertFalse(is_word('foo bar'))
-    #     self.assertFalse(is_word('foo@bar'))
+        self.assertFalse(is_word('foo\r\nbar'))
+        self.assertFalse(is_word('foo bar'))
+        self.assertFalse(is_word('foo@bar'))
 
     def test_is_token(self):
         self.assertTrue(is_token('foo'))
@@ -130,21 +130,23 @@ class TestParser(unittest.TestCase):
         self.assertFalse(is_tspecials('E'))
         self.assertFalse(is_tspecials('9'))
 
-    # def test_is_quoted_string(self):
-    #     self.assertTrue(is_quoted_string('""'))
-    #     self.assertTrue(is_quoted_string('"foo @"'))
-    #     self.assertTrue(is_quoted_string('"foo %ac"'))
-    #     self.assertTrue(is_quoted_string('"foo2"'))
-    #     self.assertTrue(is_quoted_string('"foo bar 2"'))
-    #     # self.assertTrue(is_quoted_string('"foo bar bar\r\n2"'))
-    #     self.assertTrue(is_quoted_string('"3"'))
-    #     self.assertTrue(is_quoted_string('"3\t3"'))
-    #     self.assertTrue(is_quoted_string('"3\r\n3"'))
-    #     self.assertTrue(is_quoted_string('"3\r\n foo bar"'))
+    def test_is_quoted_string(self):
+        self.assertTrue(is_quoted_string('""'))
+        self.assertTrue(is_quoted_string('"foo @"'))
+        self.assertTrue(is_quoted_string('"foo %ac"'))
+        self.assertTrue(is_quoted_string('"foo2"'))
+        self.assertTrue(is_quoted_string('"foo bar 2"'))
+        self.assertTrue(is_quoted_string('"3"'))
+        self.assertTrue(is_quoted_string('"3\t3"'))
 
-    #     self.assertFalse(is_quoted_string('"\x7f"'))
-    #     self.assertFalse(is_quoted_string('"0 0 \x7f"'))
-    #     self.assertFalse(is_quoted_string('"0 0 \0"'))
+        # \r 13 \n 10 => ctl  /r/n/t = true 
+        # self.assertTrue(is_quoted_string('"foo bar bar\r\n2"'))
+        # self.assertTrue(is_quoted_string('"3\r\n3"'))
+        self.assertTrue(is_quoted_string('"3\r\n foo bar"'))
+
+        self.assertFalse(is_quoted_string('"\x7f"'))
+        self.assertFalse(is_quoted_string('"0 0 \x7f"'))
+        self.assertFalse(is_quoted_string('"0 0 \0"'))
 
     def test_is_qdtext(self):
         self.assertTrue(is_qdtext('e'))
@@ -159,3 +161,16 @@ class TestParser(unittest.TestCase):
         self.assertFalse(is_qdtext('\n'))
         self.assertFalse(is_qdtext('\x7f'))
         self.assertFalse(is_qdtext('\"'))
+
+    def test_is_HTTP_Version(self):
+        self.assertTrue(is_HTTP_Version("HTTP/1.0"))
+        self.assertTrue(is_HTTP_Version("HTTP/0.9"))
+        self.assertTrue(is_HTTP_Version("HTTP/13.18"))
+
+
+        # self.assertFalse(is_HTTP_Version("HTTP/ 1.0"))
+        self.assertFalse(is_HTTP_Version("HTTPP/10"))
+        self.assertFalse(is_HTTP_Version("HTTP/.0"))
+        self.assertFalse(is_HTTP_Version("HTTP/1..0"))
+        self.assertFalse(is_HTTP_Version("HTTPP/1.0\r\n"))
+        self.assertFalse(is_HTTP_Version("HTTPP/1.00231"))
