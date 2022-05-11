@@ -63,13 +63,17 @@ class TestParser(unittest.TestCase):
         self.assertFalse(is_ctl('\x39'))
 
     def test_is_lws(self):
-        # self.assertTrue(is_lws('\r\n'))
+        self.assertTrue(is_lws('\r\n'))
         self.assertTrue(is_lws(' '))
         self.assertTrue(is_lws('\t'))
         self.assertTrue(is_lws('\r\n\t'))
-        self.assertTrue(is_lws('\r\n\r\n\t'))
-        self.assertTrue(is_lws('\r\n '))
-
+        self.assertTrue(is_lws('\r\n\t\t\t\t'))
+        self.assertTrue(is_lws('\r\n                 '))
+        
+        
+        
+        
+        self.assertFalse(is_lws('\r\n \r\n'))
         self.assertFalse(is_lws('2'))
         self.assertFalse(is_lws('R'))
         self.assertFalse(is_lws('\r'))
@@ -162,15 +166,34 @@ class TestParser(unittest.TestCase):
         self.assertFalse(is_qdtext('\x7f'))
         self.assertFalse(is_qdtext('\"'))
 
-    def test_is_HTTP_Version(self):
-        self.assertTrue(is_HTTP_Version("HTTP/1.0"))
-        self.assertTrue(is_HTTP_Version("HTTP/0.9"))
-        self.assertTrue(is_HTTP_Version("HTTP/13.18"))
+    # def test_is_HTTP_Version(self):
+    #     self.assertTrue(is_HTTP_Version("HTTP/1.0"))
+    #     self.assertTrue(is_HTTP_Version("HTTP/0.9"))
+    #     self.assertTrue(is_HTTP_Version("HTTP/13.18"))
 
 
-        # self.assertFalse(is_HTTP_Version("HTTP/ 1.0"))
-        self.assertFalse(is_HTTP_Version("HTTPP/10"))
-        self.assertFalse(is_HTTP_Version("HTTP/.0"))
-        self.assertFalse(is_HTTP_Version("HTTP/1..0"))
-        self.assertFalse(is_HTTP_Version("HTTPP/1.0\r\n"))
-        self.assertFalse(is_HTTP_Version("HTTPP/1.00231"))
+    #     self.assertFalse(is_HTTP_Version("HTTP/ 1.0"))
+    #     self.assertFalse(is_HTTP_Version("HTTPP/10"))
+    #     self.assertFalse(is_HTTP_Version("HTTP/.0"))
+    #     self.assertFalse(is_HTTP_Version("HTTP/1..0"))
+    #     self.assertFalse(is_HTTP_Version("HTTPP/1.0\r\n"))
+    #     self.assertFalse(is_HTTP_Version("HTTPP/1.00231"))
+
+    # def test_is_URI(self):
+    #     pass
+
+"""GET / HTTP/1.1
+"""
+ 
+ 
+--------------------------------------------------------
+ 
+"""POST / HTTP/1.1
+ 
+Accept: text/html,application/xhtml+xml
+Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8
+User-Agent: Mozilla/5.0
+Content-Type: application/x-www-form-urlencoded
+Content-Length: 19
+ 
+foo=hello&bar=world"""
