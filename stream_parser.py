@@ -63,8 +63,8 @@ def parse_http_request_line(stream):
                 if len(octet.netloc) > 0:
                     uri += "//"
                     for oct in octet.netloc:
-                        if is_netloc(t):
-                            uri + ct
+                        if is_netloc(oct):
+                            uri += oct
                         else:
                             raise ValueError('invalid netloc')
                 if len(octet.path) > 0:
