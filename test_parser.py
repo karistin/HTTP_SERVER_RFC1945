@@ -1,7 +1,9 @@
 import unittest
 from parser import is_char, is_upalpha, is_loalpha, is_alpha, \
     is_digit, is_ctl, is_ht, is_sp, is_lws, is_text, is_word, \
-    is_token, is_tspecials, is_quoted_string, is_qdtext, is_HTTP_Version
+    is_token, is_tspecials, is_quoted_string, is_qdtext, is_HTTP_Version, \
+    is_safe, is_unsafe, is_extra, is_reserved, is_national, is_escape, is_uchar, \
+    is_absoluteURI, is_relativeURI, is_scheme
 
 class TestParser(unittest.TestCase):
     def test_is_char(self):
@@ -69,9 +71,6 @@ class TestParser(unittest.TestCase):
         self.assertTrue(is_lws('\r\n\t'))
         self.assertTrue(is_lws('\r\n\t\t\t\t'))
         self.assertTrue(is_lws('\r\n                 '))
-        
-        
-        
         
         self.assertFalse(is_lws('\r\n \r\n'))
         self.assertFalse(is_lws('2'))
@@ -166,28 +165,117 @@ class TestParser(unittest.TestCase):
         self.assertFalse(is_qdtext('\x7f'))
         self.assertFalse(is_qdtext('\"'))
 
-    # def test_is_HTTP_Version(self):
-    #     self.assertTrue(is_HTTP_Version("HTTP/1.0"))
-    #     self.assertTrue(is_HTTP_Version("HTTP/0.9"))
-    #     self.assertTrue(is_HTTP_Version("HTTP/13.18"))
+    def test_is_HTTP_Version(self):
+        self.assertTrue(is_HTTP_Version("HTTP/1.0"))
+        self.assertTrue(is_HTTP_Version("HTTP/0.9"))
+        self.assertTrue(is_HTTP_Version("HTTP/13.18"))
 
 
-    #     self.assertFalse(is_HTTP_Version("HTTP/ 1.0"))
-    #     self.assertFalse(is_HTTP_Version("HTTPP/10"))
-    #     self.assertFalse(is_HTTP_Version("HTTP/.0"))
-    #     self.assertFalse(is_HTTP_Version("HTTP/1..0"))
-    #     self.assertFalse(is_HTTP_Version("HTTPP/1.0\r\n"))
-    #     self.assertFalse(is_HTTP_Version("HTTPP/1.00231"))
+        self.assertFalse(is_HTTP_Version("HTTP/ 1.0"))
+        self.assertFalse(is_HTTP_Version("HTTPP/10"))
+        self.assertFalse(is_HTTP_Version("HTTP/.0"))
+        self.assertFalse(is_HTTP_Version("HTTP/1..0"))
+        self.assertFalse(is_HTTP_Version("HTTPP/1.0\r\n"))
+        self.assertFalse(is_HTTP_Version("HTTPP/1.00231"))
 
+    def test_is_safe(self):
+        self.assertTrue(is_safe("$"))
+        self.assertTrue(is_safe("-"))
+        self.assertTrue(is_safe("."))
+        
+        self.assertFalse(is_safe(";"))
+        self.assertFalse(is_safe("123"))
+        self.assertFalse(is_safe("sdvd"))
+        self.assertFalse(is_safe("\x01"))
+        self.assertFalse(is_safe("*"))
+
+    def test_is_unsafe(self):
+        self.assertTrue(is_unsafe("\x01"))
+        self.assertTrue(is_unsafe("\""))
+        self.assertTrue(is_unsafe("<"))
+        self.assertTrue(is_unsafe("\x7F"))
+        
+        self.assertFalse(is_unsafe("$"))
+        self.assertFalse(is_unsafe("-"))
+        self.assertFalse(is_unsafe("sdvd"))
+        self.assertFalse(is_unsafe("\x21"))
+        self.assertFalse(is_unsafe("."))
+
+    def test_is_extra(self):
+        self.assertTrue(is_extra("!"))
+        self.assertTrue(is_extra("*"))
+        self.assertTrue(is_extra(","))
+        self.assertTrue(is_extra("\x28"))
+        
+        self.assertFalse(is_extra("$"))
+        self.assertFalse(is_extra("-"))
+        self.assertFalse(is_extra("sdvd"))
+        self.assertFalse(is_extra("."))
+    
+    def test_is_reserved(self):
+        self.assertTrue(is_reserved(";"))
+        self.assertTrue(is_reserved("?"))
+        self.assertTrue(is_reserved(":"))
+        self.assertTrue(is_reserved("@"))
+        
+        self.assertFalse(is_reserved("\x01"))
+        self.assertFalse(is_reserved("-"))
+        self.assertFalse(is_reserved("sdvd"))
+        self.assertFalse(is_reserved("\x21"))
+        self.assertFalse(is_reserved("."))
+
+    def test_is_national(self):
+        self.assertFalse(is_national("a"))
+        self.assertFalse(is_national("5"))
+        self.assertFalse(is_national("?"))
+        self.assertFalse(is_national("!"))
+        self.assertFalse(is_national("$"))
+        self.assertFalse(is_national("%"))
+
+        # what is true ?
+    
+    def test_is_escape(self):
+        self.assertTrue(is_escape("%AE"))
+        self.assertTrue(is_escape("%\x62\x63"))
+        self.assertTrue(is_escape("%\x41\x42"))
+        
+        self.assertFalse(is_escape("%\x01\x02"))
+        self.assertFalse(is_escape("\x41\x41\x42\x42"))
+        self.assertFalse(is_escape("%%\x41\x42"))
+        self.assertFalse(is_escape("%\x41\x42 "))
+        self.assertFalse(is_escape(" %\x41\x42"))
+
+    def test_is_scheme(self):
+        self.assertTrue(is_scheme("asdf15+-"))
+        self.assertTrue(is_scheme("vdsa.21vsdv--"))
+        self.assertTrue(is_scheme("16513515+-+++"))
+        self.assertTrue(is_scheme("cvvsdsd"))
+        
+        self.assertFalse(is_scheme(""))
+        self.assertFalse(is_scheme(" "))
+        self.assertFalse(is_scheme("\x01"))
+        self.assertFalse(is_scheme("**@@@"))
+
+
+    def test_is_absoluteURI(self):
+        self.assertTrue(is_absoluteURI('http://www.example.com/some/path'))
+        # self.assertTrue(is_absoluteURI("vdsa.21vsdv--"))
+        # self.assertTrue(is_absoluteURI("16513515+-+++"))
+        # self.assertTrue(is_absoluteURI("cvvsdsd"))
+        
+        # self.assertFalse(is_absoluteURI(""))
+        # self.assertFalse(is_absoluteURI(" "))
+        # self.assertFalse(is_absoluteURI("\x01"))
+        # self.assertFalse(is_absoluteURI("**@@@"))
     # def test_is_URI(self):
     #     pass
 
 """GET / HTTP/1.1
 """
  
- 
+'''
 --------------------------------------------------------
- 
+'''
 """POST / HTTP/1.1
  
 Accept: text/html,application/xhtml+xml
