@@ -259,6 +259,7 @@ class TestParser(unittest.TestCase):
 
     def test_is_absoluteURI(self):
         self.assertTrue(is_absoluteURI('http://www.example.com/some/path'))
+        self.assertTrue(is_absoluteURI('http://www.devo.com/resources'))
         # self.assertTrue(is_absoluteURI("vdsa.21vsdv--"))
         # self.assertTrue(is_absoluteURI("16513515+-+++"))
         # self.assertTrue(is_absoluteURI("cvvsdsd"))

@@ -3,11 +3,11 @@ from io import BytesIO
 from urllib.parse import urlparse
 
 from parser import is_char, is_ctl, is_digit, is_token,\
-    is_absoluteURI, is_relativeURI, is_scheme, is_uchar, is_reserved
+    is_scheme, is_netloc, is_param, is_fragment, is_query, is_path
 
 
-stream = BytesIO(b"post /a/b/c/d/e?foo=bar&asd=asdf#id-123 HTTP/10.1\r\n")
-stream = BytesIO(b"post /a/b/c/d/e?asdj=bdss#id-123 HTTP/10.1\r\n")
+# stream = BytesIO(b"post /a/b/c/d/e?foo=bar&asd=asdf#id-123 HTTP/10.1\r\n")
+# stream = BytesIO(b"post /a/b/c/d/e?asdj=bdss#id-123 HTTP/10.1\r\n")
 
 # FSM
 # State Design Pattern
@@ -52,23 +52,50 @@ def parse_http_request_line(stream):
             elif octet == ' ':
                 # validation !
                 octet = urlparse(uri)
-                # absoluteURI
-                if octet.scheme != "":
+                uri = ''
+                if len(octet.scheme) > 0:
                     for oct in octet.scheme:
                         if is_scheme(oct):
                             uri += oct
                         else:
                             raise ValueError('invalid scheme')
                     uri += ":"
+                if len(octet.netloc) > 0:
+                    uri += "//"
+                    for oct in octet.netloc:
+                        if is_netloc(t):
+                            uri + ct
+                        else:
+                            raise ValueError('invalid netloc')
                 if len(octet.path) > 0:
                     for oct in octet.path:
-                        if is_uchar(oct) or is_reserved(oct):
+                        if is_path(oct):
                             uri += oct
-                    uri = octet.scheme + ":" + octet.path + octet.fragment
-                elif is_relativeURI(uri):
-                    pass
-                else:
-                    raise ValueError('invalid URI')
+                        else:
+                            raise ValueError('invalid path')
+                if len(octet.params) > 0:
+                    uri += ";"
+                    for oct in octet.params:
+                        if is_param(oct):
+                            uri += oct
+                        else:
+                            raise ValueError('invalid params')
+                if len(octet.query) > 0:
+                    uri += "?"
+                    for oct in octet.query:
+                        if is_query(oct):
+                            uri += oct
+                        else:
+                            raise ValueError('invalid query')
+                if len(octet.fragment) > 0:
+                    uri += "#"
+                    for oct in octet.fragment:
+                        if is_fragment(oct):
+                            uri += oct
+                        else:
+                            raise ValueError('invalid fragment')
+                if len(uri) == 0:
+                    raise ValueError('uri is not exist')
                 state = ParserState.Version
 
         elif state == ParserState.Version:
@@ -97,6 +124,7 @@ def parse_http_request_line(stream):
             else:
                 raise ValueError('invalid version')
 
-
+def parse_response_line_bytes(steam):
+    pass
 
 # print(parse_http_request_line(stream))

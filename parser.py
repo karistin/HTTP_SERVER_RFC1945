@@ -25,42 +25,42 @@ from urllib.parse import urlparse
 '''
 
 def is_char(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     return 0 <= ord(octet) <= 127
 
 def is_upalpha(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     return 65 <= ord(octet) < 91
 
 def is_loalpha(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     return 97 <= ord(octet) < 123
 
 def is_alpha(octet):
-    if len(octet) > 1:
+    if len(octet) != 1 :
         return False
     return is_upalpha(octet) or is_loalpha(octet)
 
 def is_digit(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False    
     return 48 <= ord(octet) < 58
 
 def is_ctl(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False    
     return 0 <= ord(octet) < 32 or ord(octet) == 127
 
 def is_ht(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False    
     return ord(octet) == 9
 
 def is_sp(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False    
     return ord(octet) == 32
 
@@ -93,7 +93,7 @@ def is_token(octet):
     return True
 
 def is_tspecials(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     tspecials = ["(", ")", "<", ">", "@"\
             , ",", ";", ":", "\\", "\""\
@@ -126,7 +126,7 @@ def is_qdtext(octet):
     if is_lws(octet): #\r\n\t
         return True
 
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     
     if ord(octet) == 34 or is_ctl(octet): # ""
@@ -183,6 +183,8 @@ def is_Method(octet):
     fragment       = *( uchar | reserved )
 
     pchar          = uchar | ":" | "@" | "&" | "=" | "+"
+                    ALPHA | DIGIT | safe | extra | national
+                    "%" HEX HEX
     uchar          = unreserved | escape
     unreserved     = ALPHA | DIGIT | safe | extra | national
 
@@ -196,7 +198,7 @@ def is_Method(octet):
 '''
 
 def is_safe(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     safes = ["$", "-", "_", "."]
     for safe in safes:
@@ -205,7 +207,7 @@ def is_safe(octet):
     return False
 
 def is_unsafe(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     if is_ctl(octet):
         return True
@@ -216,7 +218,7 @@ def is_unsafe(octet):
     return False
 
 def is_extra(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     extras = ["!", "*", "'", "(", ")", ","]
     for extra in extras:
@@ -225,7 +227,7 @@ def is_extra(octet):
     return False
 
 def is_reserved(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     reserveds = [";", "/", "?", ":", "@", "&", "=", "+"]
     for reserved in reserveds:
@@ -239,7 +241,7 @@ def is_national(octet):
     return True
 
 def is_hex(octet):
-    if len(octet) > 1:
+    if len(octet) != 1:
         return False
     hexs = ["A", "B", "C", "D", "E", "F", "a", "b", "c", "d", "e", "f"]
     for hex in hexs:
@@ -255,11 +257,16 @@ def is_escape(octet):
         return False
     return False 
 
+def is_unreserved(octet):
+    if len(octet) != 1:
+        return False
+    return is_alpha(octet) or is_digit(octet) or is_safe(octet) or is_extra(octet) or is_national(octet)
+
 def is_uchar(octet):
-    return is_reserved(octet) or is_escape(octet)
+    return is_unreserved(octet) or is_escape(octet)
 
 def is_pchar(octet):
-    if len(octet)  > 1:
+    if len(octet) != 1:
         return False
     pchars = [":", "@", "&", "=", "+"]
     for pchar in pchars:
@@ -310,24 +317,64 @@ def is_param(octet):
         return False
     return True
 
+def is_fsegment(octet):
+    if len(octet) == 0:
+        return False
+    for oct in octet:
+        if is_pchar(oct):
+            continue
+        return False
+    return True
+
+def is_segment(octet):
+    if len(octet) == 0:
+        return True
+    for oct in octet:
+        if is_pchar(oct):
+            continue
+        return False
+    return True
+
+def is_path(octet):
+    if len(octet) == 0:
+        return False
+    if octet == '/':
+        return True
+    octet = octet.split('/')
+    if is_fsegment(octet[0]):
+        if len(octet) == 1:
+            return True
+        for oct in octet:
+            if oct == octet[0]:
+                continue
+            if is_segment(oct):
+                continue
+            return False
+    else:
+        return False    
+    return True
 
 def is_absoluteURI(octet):
     octet = urlparse(octet)
     if octet.scheme == "":
+        print("1")
         return False
     for oct in octet.scheme:
         if is_scheme(oct):
             continue
+        print("2")
         return False
     if len(octet.path) > 0:
         for oct in octet.path:
             if is_uchar(oct) or is_reserved(oct):
                 continue
+            print("3")
             return False
     if len(octet.fragment) > 0:
         for oct in octet.fragment:
             if is_fragment(octet):
                 continue
+            print("4")
             return False
     return True
 
