@@ -21,6 +21,7 @@ stream = b'\r\n'.join([
     #                     and consisting of either *TEXT or combinations
     #                     of token, tspecials, and quoted-string>
 
+
 stream = BytesIO(stream)
 buf = stream.read(1).decode('iso-8859-1')
 state = 1

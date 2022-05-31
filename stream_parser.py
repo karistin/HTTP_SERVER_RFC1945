@@ -48,7 +48,6 @@ class HeaderState(Enum):
     Body    = auto()
 
 def parse_http_request_line(stream):
-    print(type(stream))
     state = ParserState.Method
     method = ''
     uri = ''
@@ -69,73 +68,45 @@ def parse_http_request_line(stream):
         # 메소드 저장 부분
         elif state == ParserState.RequestURI:
             if is_char(octet):
-                if is_ctl(octet):
-                    raise ValueError('CTL in uri')
+                # if is_ctl(octet):
+                #     raise ValueError('CTL in uri')
                 uri += octet
             elif octet == ' ':
                 # validation !
                 octet = urlparse(uri)
                 uri = ''
                 # absoulte uri
-                if len(octet.scheme) > 0:
-                    if len(octet.netloc) > 0:
-                        return True
-                # abs uri
-                else:
-                    if len(octet.path) > 0 and path.startswith('/'):
-                        if len(octet.params) > 0:
-                            pass
-                        if len(octet.query) > 0:
-                            pass
-                    else:
-                        raise ValueError("1")
-                if len(octet.fragment) > 0:
-                    pass
+                # scheme : netloc 
                 if len(octet.scheme) > 0:
                     for oct in octet.scheme:
-                        if is_scheme(oct):
-                            uri += oct
-                        else:
-                            raise ValueError('invalid scheme')
-                    uri += ":"
-                if len(octet.netloc) > 0:
-                    uri += "//"
-                    for oct in octet.netloc:
-                        if is_netloc(oct):
-                            uri += oct
-                        else:
-                            raise ValueError('invalid netloc')
-                if len(octet.path) > 0:
-                    for oct in octet.path:
-                        if is_path(oct):
-                            uri += oct
-                        else:
-                            raise ValueError('invalid path')
-                if len(octet.params) > 0:
-                    uri += ";"
-                    for oct in octet.params:
-                        if is_param(oct):
-                            uri += oct
-                        else:
-                            raise ValueError('invalid params')
-                if len(octet.query) > 0:
-                    uri += "?"
-                    for oct in octet.query:
-                        if is_query(oct):
-                            uri += oct
-                        else:
-                            raise ValueError('invalid query')
+                        if not is_scheme(oct):
+                            raise ValueError("Scheme is not correct")        
+                    if len(octet.netloc) > 0:
+                        for oct in octet.netloc:
+                            if not is_netloc(oct):
+                                raise ValueError("Netloc is not correct")
+                # abs uri
+                elif len(octet.path) > 0 and octet.path.startswith('/'):
+                        for oct in octet.path:
+                            if not is_path(oct):
+                                raise ValueError("Path is not correct")
+                        if len(octet.params) > 0:
+                            for oct in octet.params:
+                                if not is_param(oct):
+                                    raise ValueError("params is not correct")
+                        if len(octet.query) > 0:
+                            for oct in octet.query:
+                                if not is_query(oct):
+                                    raise ValueError("query is not correct")
                 if len(octet.fragment) > 0:
-                    uri += "#"
                     for oct in octet.fragment:
-                        if is_fragment(oct):
-                            uri += oct
-                        else:
-                            raise ValueError('invalid fragment')
+                        if not is_fragment(oct):
+                            raise ValueError("fragment is not correct")
                 if len(uri) == 0:
-                    raise ValueError('uri is not exist')
+                    raise ValueError("uri is not exist")
+                print(octet.geturl())
+                uri = octet.geturl()
                 state = ParserState.Version
-
         elif state == ParserState.Version:
             word = octet + stream.read(4).decode('iso-8859-1')
             if word == 'HTTP/':
@@ -161,45 +132,3 @@ def parse_http_request_line(stream):
                         raise ValueError('invalid version')
             else:
                 raise ValueError('invalid version')
-
-    #    Request-Header = Authorization            ; Section 10.2
-    # Authorization  = "Authorization" ":" credentials
-    #                   | From                     ; Section 10.8
-    # From = "From" ":" mailbox
-    #                   | If-Modified-Since        ; Section 10.9
-    # If-Modified-Since = "If-Modified-Since" ":" HTTP-date
-    #                   | Referer                  ; Section 10.13
-    #  Referer        = "Referer" ":" ( absoluteURI | relativeURI )
-    #                   | User-Agent 
-    # User-Agent     = "User-Agent" ":" 1*( product | comment )
-
-def parse_response_line_bytes(steam):
-    parse_http_request_line(steam)
-
-    state = HeaderState.General
-    General = ""
-    Request = ""
-    Entity = ""
-    Body = ""
-    while True:
-        octet = stream.read(1).decode('iso-8859-1')
-        if len(octet) == 0:
-            return ""
-
-    #    General-Header = Date                     ; Section 10.6
-    # Date           = "Date" ":" HTTP-date
-    #                   | Pragma                   ; Section 10.12
-    #        Pragma           = "Pragma" ":" 1#pragma-directive
-    #    pragma-directive = "no-cache" | extension-pragma
-    #    extension-pragma = token [ "=" word ]
-
-        if state == HeaderState.General:
-            word = octet + stream.read(4).decode('iso-8859-1')
-            if word == "DATE:":
-                pass
-            else:
-                state = HeaderState.Request
-
-        elif state == HeaderState().Request:
-            pass
-# print(parse_http_request_line(stream))

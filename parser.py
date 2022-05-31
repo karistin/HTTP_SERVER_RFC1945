@@ -245,6 +245,8 @@ def is_national(octet):
 def is_hex(octet):
     if len(octet) != 1:
         return False
+    if is_digit(octet):
+        return True
     hexs = ["A", "B", "C", "D", "E", "F", "a", "b", "c", "d", "e", "f"]
     for hex in hexs:
         if ord(octet) == ord(hex):
@@ -356,96 +358,17 @@ def is_path(octet):
         return False    
     return True
 
-def is_absoluteURI(octet):
-    octet = urlparse(octet)
-    if octet.scheme == "":
-        print("1")
-        return False
-    for oct in octet.scheme:
-        if is_scheme(oct):
-            continue
-        print("2")
-        return False
-    if len(octet.path) > 0:
-        for oct in octet.path:
-            if is_uchar(oct) or is_reserved(oct):
-                continue
-            print("3")
-            return False
-    if len(octet.fragment) > 0:
-        for oct in octet.fragment:
-            if is_fragment(octet):
-                continue
-            print("4")
-            return False
-    return True
-
-def is_relativeURI(octet):
-    return is_rel_path(octet) or is_net_path(octet) or is_abs_path(octet)
-
-    # net_path       = "//" net_loc [ abs_path ]
-    # abs_path       = "/" rel_path
-    # rel_path       = [ path ] [ ";" params ] [ "?" query ]
-
-def is_net_path(octet):
-    if octet.path.startswith('//'):
-        if octet.netloc != "":
-            pass
-    else:
-        return False
-
-def is_abs_path(octet):
-    if octet.path.startswith('/'):
-        pass
-
-def is_rel_path(octet):
-    pass
-
-def is_Request_URI(octet):
-    url = urlparse(octet)
-    return is_absoluteURI(url) or is_relativeURI(url)
-
-
-def is_Request_Line(octet):
-    if octet[-2:] != "\r\n":
-        return False
-    octet = octet.split()
-    if len(octet) != 3:
-        return False
-    print(is_Method(octet[0]))
-    print(is_Request_URI(octet[1]))
-    print(is_HTTP_Version(octet[2]))
-    return is_Method(octet[0]) and is_Request_URI(octet[1]) and is_HTTP_Version(octet[2])
-
-
-
-    #    HTTP-date      = rfc1123-date | rfc850-date | asctime-date
-
-    #    rfc1123-date   = wkday "," SP date1 SP time SP "GMT"
-    #    rfc850-date    = weekday "," SP date2 SP time SP "GMT"
-    #    asctime-date   = wkday SP date3 SP time SP 4DIGIT
-
-    #    date1          = 2DIGIT SP month SP 4DIGIT
-    #                     ; day month year (e.g., 02 Jun 1982)
-    #    date2          = 2DIGIT "-" month "-" 2DIGIT
-    #                     ; day-month-year (e.g., 02-Jun-82)
-    #    date3          = month SP ( 2DIGIT | ( SP 1DIGIT ))
-    #                     ; month day (e.g., Jun  2)
-
-    #    time           = 2DIGIT ":" 2DIGIT ":" 2DIGIT
-    #                     ; 00:00:00 - 23:59:59
-
-    #    wkday          = "Mon" | "Tue" | "Wed"
-    #                   | "Thu" | "Fri" | "Sat" | "Sun"
-
-    #    weekday        = "Monday" | "Tuesday" | "Wednesday"
-    #                   | "Thursday" | "Friday" | "Saturday" | "Sunday"
-
-    #    month          = "Jan" | "Feb" | "Mar" | "Apr"
-    #                   | "May" | "Jun" | "Jul" | "Aug"
-    #                   | "Sep" | "Oct" | "Nov" | "Dec"
-
-def is_month(octet):
-    month = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug" \
-            , "Sep", "Oct", "Nov", "Dec"]
-    
+#  not use
+# def is_Reason_Phrase(octet):
+#     Status_Code = { "200":  "OK","201":  "Created","202":  "Accepted","204":  "No Content","301":  "Moved Permanently"\
+#         ,"302":  "Moved Temporarily","304":  "Not Modified","400":  "Bad Request","401":  "Unauthorized",\
+#         "403":  "Forbidden","404":  "Not Found","500": "Internal Server Error","501":  "Not Implemented",\
+#         "502":  "Bad Gateway","503":  "Service Unavailable"}
+#     for status in Status_Code.keys():
+#         if octet == status:
+#             return True 
+#     for oct in octet:
+#         if not is_text(oct) or oct in ('\r', '\n'):
+#             return False
+#         return True 
+# print(is_Reason_Phrase("vsdvxc"))

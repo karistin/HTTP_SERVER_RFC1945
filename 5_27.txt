@@ -1,5 +1,7 @@
-1. decode 
+1. decode ??
 2. URI parser 
+	바이트로 읽고 이를 통한 헤더 파싱 
+
 3. full request 
 	gen
 	request (excluding from)
