@@ -27,13 +27,20 @@ Content-Length: 19
 foo=hello&bar=world"""
 )
 
-stream2 =  b"""HTTP/1.1 200 OK
-Date: Wed, 11 May 2022 20:14:00 GMT
-Server: PyServer/5.0
-Content-Type: text/plain
-Content-Length: 11
+stream2 =  b"""HTTP/1.1 302 Moved Temporarily
+Connection: close
+Content-Type: text/html
+Date: Tue, 31 May 2022 05:56:07 GMT
+Location: https://www.naver.com/
+Server: NWS
 
-hello world"""
+<html>
+<head><title>302 Found</title></head>
+<body>
+<center><h1>302 Found</h1></center>
+<hr><center> NWS </center>
+</body>
+</html>"""
 
 
 def http_Full_Request_parser(stream):
@@ -150,8 +157,6 @@ def http_Full_Request_parser(stream):
                     if is_char(octet):
                         field_value += octet
             elif state == ParserState.Body:
-                if octet == "\n":
-                    continue
                 body += octet
         except EOFError:
             return Request_Line, header, body
@@ -249,8 +254,6 @@ def http_Full_Response_parser(stream):
                     if is_char(octet):
                         field_value += octet
             elif state == ParserState.Body:
-                if octet == "\n":
-                    continue
                 body += octet
         except EOFError:
             return Status_Line
@@ -258,12 +261,12 @@ def http_Full_Response_parser(stream):
 (Request_Line, header, body) = (http_Full_Request_parser(stream))
 
 
-pprint(Request_Line)
-pprint(header)
-print(body)
+# pprint(Request_Line)
+# pprint(header)
+# pprint(body)
 
 (Response_Line, header, body) = http_Full_Response_parser(stream2)
 
 pprint(Response_Line)
 pprint(header)
-print(body)
+pprint(body)
