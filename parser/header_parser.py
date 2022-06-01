@@ -1,4 +1,4 @@
-from network.parser import is_token, is_char, is_text, is_tspecials, is_qdtext, is_lws, is_ctl
+from parser import is_token, is_char, is_text, is_tspecials, is_qdtext, is_lws, is_ctl
 from io import BytesIO
 
 

@@ -1,6 +1,6 @@
 from io import BytesIO
 import unittest
-from parser.stream_parser import parse_http_request_line
+from stream_parser import parse_http_request_line
 
 def parse_request_line_bytes(b):
     return parse_http_request_line(BytesIO(b))
