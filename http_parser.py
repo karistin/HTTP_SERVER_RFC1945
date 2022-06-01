@@ -7,6 +7,8 @@ from parser import is_token, is_char, is_ctl, is_sp, is_digit,\
     is_param, is_fragment
 import json
 from pprint import pprint
+
+
 class ParserState(Enum):
     Method = auto()
     RequestURI = auto()
@@ -16,15 +18,16 @@ class ParserState(Enum):
     Header = auto()
     Body = auto()    
 
+# POST http://localhost:12345/ HTTP/1.1
+# Accept: text/html,application/xhtml+xml
+# Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8
+# User-Agent: Mozilla/5.0
+# Content-Type: application/x-www-form-urlencoded
+# Content-Length: 19
 
-stream = (b"""POST http://www.naver.com/index.html;params;params2?query#fragment HTTP/1.1
-Accept: text/html,application/xhtml+xml
-Accept-Language: en-US,en;q=0.9,ko-KR;q=0.8
-User-Agent: Mozilla/5.0
-Content-Type: application/x-www-form-urlencoded
-Content-Length: 19
+# foo=hello&bar=world
 
-foo=hello&bar=world"""
+stream = (b'GET / HTTP/1.1\r\nHost: 127.0.0.1:12345\r\nUser-Agent: HTTPie/1.0.3\r\nAccept-Encoding: gzip, deflate\r\nAccept: */*\r\nConnection: keep-alive\r\n\r\n'
 )
 
 stream2 =  b"""HTTP/1.1 302 Moved Temporarily
@@ -44,7 +47,8 @@ Server: NWS
 
 
 def http_Full_Request_parser(stream):
-    stream = b'\r\n'.join(stream.split(b'\n'))
+    # stream = b'\r\n'.join(stream.split(b'\n'))
+    # print(stream)
     stream = BytesIO(stream)
     # something?
     state = ParserState.Method
@@ -134,13 +138,15 @@ def http_Full_Request_parser(stream):
                         octet = stream.read(1).decode('iso-8859-1')
                         continue
                     if octet == "\r":
-                        state = ParserState.Body
-                        continue
+                        octet = stream.read(1).decode('iso-8859-1')
+                        if octet == "\n":
+                            state = ParserState.Body
+                            continue
                     if not is_token(octet):
                         raise ValueError("invalid http msg")
                     field_name += octet
                 elif sub_ver_flag == False:
-                    if octet in (" ", ":"):
+                    if octet in (" "):
                         octet = stream.read(1).decode('iso-8859-1')
                         continue
                     if octet == '\r':
@@ -258,15 +264,15 @@ def http_Full_Response_parser(stream):
         except EOFError:
             return Status_Line
 
-(Request_Line, header, body) = (http_Full_Request_parser(stream))
+# (Request_Line, header, body) = (http_Full_Request_parser(stream))
 
 
 # pprint(Request_Line)
 # pprint(header)
 # pprint(body)
 
-(Response_Line, header, body) = http_Full_Response_parser(stream2)
+# (Response_Line, header, body) = http_Full_Response_parser(stream2)
 
-pprint(Response_Line)
-pprint(header)
-pprint(body)
+# pprint(Response_Line)
+# pprint(header)
+# pprint(body)
