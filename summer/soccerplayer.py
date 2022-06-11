@@ -1,9 +1,8 @@
-from ball import ball
+from ball import Ball
+from bean import bean
 
 
-class soccerplayer:
-    def __init__(self):
-        ball : ball = ""
-
-    def return_ball(ball):
-        print(ball)
+@bean
+class Soccerplayer:
+    ball: Ball
+    

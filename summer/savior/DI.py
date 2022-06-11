@@ -41,6 +41,8 @@ class Usecase:
     def __init__(self, repo:Repo):
         print(repo)
         self.repo = repo
+class Book:
+    ksj : int = 123
 
 if __name__ == '__main__':
     usecase = Usecase()
@@ -48,4 +50,5 @@ if __name__ == '__main__':
     print(usecase.repo.get())
     print(usecase.repo.sql)
 
+    print(Book.ksj)
 # https://www.hides.kr/1053

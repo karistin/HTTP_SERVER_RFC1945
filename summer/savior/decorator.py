@@ -58,20 +58,20 @@ def arg_test(x,y,z):
         return wrap_f
     return wrap
 
-def add(x, y):
-    print('add call')
-    return x+y
+# def add(x, y):
+#     print('add call')
+#     return x+y
 
 # v = arg_test(1,2,3)
 # x = v(add)
 # z = x(1,2)
 # print(z)
 
-@arg_test(1,2,3)
-def add_1(x,y):
-    return x+y
+# @arg_test(1,2,3)
+# def add_1(x,y):
+#     return x+y
 
-print('add_1 :', add_1(1,2))
+# print('add_1 :', add_1(1,2))
 
 # class decoratorWithArguments(object):
 #     def __init__(self, arg1, arg2, arg3):
@@ -113,3 +113,34 @@ print('add_1 :', add_1(1,2))
 # sayHello("a", "different", "set of", "arguments")
 # print ("after second sayHello() call")
 
+
+def route(*args, **kwargs):
+    
+    print(args, kwargs)
+
+    def wrap(func):
+
+        print(func)
+
+        
+        def wrapper(*args, **kwargs):
+            
+            # print(func.__name__)
+            print(args, kwargs)
+            
+            
+
+            # if args[0] == '/':
+            #     self.func1 = func    
+            
+            # elif args[0] == '/post':
+            #     self.func2 = func
+            
+            # else:
+            #     self.func3 = func
+        return wrapper
+        
+    return wrap 
+
+a = route('/')
+print(a)

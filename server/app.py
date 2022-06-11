@@ -13,25 +13,26 @@ server = Server()
 
 @server.route('/')
 def index(headers, stream):
-    return 200, {}, MAIN_PAGE.encode('iso-8859-1')
+    print('/')
+    return 200, {}, MAIN_PAGE
 
 
-# @server.route('/post', methods=['POST'])
-# def index(headers, stream):
-#     print('post')
-#     size = int(headers.get('content-length', '0'))
-#     body = b''
-#     while size > 0:
-#         read_size = min(4096, size)
-#         body += stream.read(read_size)
-#         size -= read_size
-#     body = body.decode('iso-8859-1')
-#     return 200, {}, POST_PAGE.format(body).encode('iso-8859-1')
+@server.route('/post', methods=['POST'])
+def index(headers, stream):
+    print('post')
+    size = int(headers.get('content-length', '0'))
+    body = b''
+    while size > 0:
+        read_size = min(4096, size)
+        body += stream.read(read_size)
+        size -= read_size
+    body = body.decode('iso-8859-1')
+    return 200, {}, POST_PAGE
 
 
 if __name__ == '__main__':
     # logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
-    server.run('localhost', 8080)
+    server.run('localhost', 8081)
 
 # netstat -nap | grep 8080
 #  fuser -k -n tcp 8080

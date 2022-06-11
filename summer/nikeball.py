@@ -1,12 +1,7 @@
-from ball import ball 
-from bean import injection
+from ball import Ball 
+from bean import bean
 
-
-@injection
-class nikeball(ball):
-
-    def __init__(self):
-        self.ball : str = "nike"
-
+@bean
+class Nikeball(Ball):
     def get(self):
-        return self.ball
+        return 'nikeball'

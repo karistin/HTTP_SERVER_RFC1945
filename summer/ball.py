@@ -1,9 +1,6 @@
-import abc
+from abc import *
 
-
-class ball:
-    __metaclass__ = abc.ABCMeta
-    
-    @abc.abstractmethod
+class Ball(metaclass = ABCMeta):
+    @abstractmethod
     def get(self):
         pass
