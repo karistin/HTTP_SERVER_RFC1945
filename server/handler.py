@@ -1,10 +1,9 @@
-from email.header import Header
 from enum import Enum, auto
 from parser import is_token, is_char, is_ctl, is_sp, is_digit,\
-    is_text, is_lws, is_scheme, is_netloc, is_path, is_query, \
+    is_lws, is_scheme, is_netloc, is_path, is_query, \
     is_param, is_fragment
 from urllib.parse import urlparse
-from io import BytesIO
+
 
 class ParserState(Enum):
     Method = auto()
@@ -13,9 +12,10 @@ class ParserState(Enum):
     Header = auto()
     Body = auto() 
 
-def handler(fd, state = ParserState.Method):
 
-    Request_Line = {'method' : "", 'path' : "", 'version' : ""}
+def handler(fd, state=ParserState.Method):
+
+    Request_Line = {'method': "", 'path': "", 'version': ""}
     header = {}
     sub_ver_flag = True
     field_name = ""
@@ -39,7 +39,7 @@ def handler(fd, state = ParserState.Method):
             
             elif state == ParserState.RequestURI:
                 if is_char(octet) and not is_ctl(octet) and not is_sp(octet):
-                        Request_Line['path'] += octet
+                    Request_Line['path'] += octet
                 elif octet == ' ':
                     uri = urlparse(Request_Line['path'])
 
@@ -53,17 +53,17 @@ def handler(fd, state = ParserState.Method):
                                     raise ValueError("Netloc is not correct")
                     # abs uri
                     elif len(uri.path) > 0 and uri.path.startswith('/'):
-                            for oct in uri.path:
-                                if not is_path(oct):
-                                    raise ValueError("Path is not correct")
-                            if len(uri.params) > 0:
-                                for oct in uri.params:
-                                    if not is_param(oct):
-                                        raise ValueError("params is not correct")
-                            if len(uri.query) > 0:
-                                for oct in uri.query:
-                                    if not is_query(oct):
-                                        raise ValueError("query is not correct")
+                        for oct in uri.path:
+                            if not is_path(oct):
+                                raise ValueError("Path is not correct")
+                        if len(uri.params) > 0:
+                            for oct in uri.params:
+                                if not is_param(oct):
+                                    raise ValueError("params is not correct")
+                        if len(uri.query) > 0:
+                            for oct in uri.query:
+                                if not is_query(oct):
+                                    raise ValueError("query is not correct")
                     else:
                         raise ValueError("uri is not exist")
                     if len(uri.fragment) > 0:
@@ -98,13 +98,10 @@ def handler(fd, state = ParserState.Method):
                                 raise ValueError('invalid version')
                         elif octet == '\n':
                             state = ParserState.Header
-                            # return Request_Line
-                            # temp
-                            # raise ValueError('invalid version')
-            
+
             elif state == ParserState.Header:
                 
-                if sub_ver_flag == True:
+                if sub_ver_flag is True:
                     if octet == ":":
                         sub_ver_flag = False
                         octet = fd.read(1)
@@ -123,7 +120,7 @@ def handler(fd, state = ParserState.Method):
                         raise ValueError("invalid http msg")
 
                     field_name += octet
-                elif sub_ver_flag == False:
+                elif sub_ver_flag is False:
                     if octet in (" "):
                         octet = fd.read(1)
                         continue
