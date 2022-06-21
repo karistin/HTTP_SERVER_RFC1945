@@ -8,7 +8,7 @@ from base64 import b64decode
 
 
 server = Server()
-PORT = 8081
+PORT = 8083
 
 
 #  http -a ksj:1109 localhost:8086/auth
@@ -16,7 +16,7 @@ PORT = 8081
 @server.route('/auth')
 @server.basic_auth('Aladdin', 'open sesame')
 def auth(headers, stream):
-    return 200, headers, 'hello world', '' 
+    return 401, headers, 'hello world', '' 
 
 
 @server.route('/')
@@ -38,7 +38,7 @@ def index(headers, stream):
 
 if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
-    print(f'PORT : {PORT}\r\n=============================')
+    print(f'PORT : {PORT}\r\n====================================================================')
     server.run('localhost', PORT)
 
 # netstat -nap | grep 8080

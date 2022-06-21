@@ -11,7 +11,14 @@ class ParserState(Enum):
     Version = auto()
     Header = auto()
     Body = auto() 
+    Status = auto()
+    Reason = auto()
 
+# self.Response = {
+# 'Response_Status_Line': auto(),
+# 'Response_headers': auto(),
+# 'Response_body': auto()
+# }
 
 def handler(fd, state=ParserState.Method):
 
@@ -100,7 +107,6 @@ def handler(fd, state=ParserState.Method):
                             state = ParserState.Header
 
             elif state == ParserState.Header:
-                
                 if sub_ver_flag is True:
                     if octet == ":":
                         sub_ver_flag = False
@@ -121,9 +127,9 @@ def handler(fd, state=ParserState.Method):
 
                     field_name += octet
                 elif sub_ver_flag is False:
-                    if octet in (" "):
-                        octet = fd.read(1)
-                        continue
+                    # if octet in (" "):
+                    #     octet = fd.read(1)
+                    #     continue
 
                     # if octet == '\r':
                     #     octet = fd.read(1)
@@ -151,3 +157,17 @@ def handler(fd, state=ParserState.Method):
         except KeyboardInterrupt:
             return ValueError('CTR C')
 
+
+def mk_Response(Response, states=ParserState.Version):
+    result = ''
+    for Res in Response.values():
+        if states == ParserState.Version:
+            result += '{0} {1} {2}\r\n'.format(Res['version'], Res['status_code'], Res['Reason'])
+            states = ParserState.Header
+        elif states == ParserState.Header:
+            for key, value in Res.items():
+                result += '{0}: {1}\r\n'.format(key, value)
+            states = ParserState.Body
+        elif states == ParserState.Body:
+            result += '\r\n {0}'.format(Res)
+    return result
