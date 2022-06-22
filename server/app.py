@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 
 import logging
-
 from contents import MAIN_PAGE, POST_PAGE
 from server import Server
-from base64 import b64decode
 
 
 server = Server()
-PORT = 8083
+PORT = 8080
 
 
 #  http -a ksj:1109 localhost:8086/auth
@@ -40,6 +38,3 @@ if __name__ == '__main__':
     logging.basicConfig(level=logging.DEBUG)
     print(f'PORT : {PORT}\r\n====================================================================')
     server.run('localhost', PORT)
-
-# netstat -nap | grep 8080
-#  fuser -k -n tcp 8080
