@@ -1,38 +1,40 @@
+#!/usr/bin/env python
+
 import logging
-import base64
-from contents import MAIN_PAGE, NOT_FOUND_PAGE, POST_PAGE
-from server import Server #, basic_auth
+from contents import MAIN_PAGE, POST_PAGE
+from server import Server
 
 
 server = Server()
+PORT = 8080
 
-# @server.route('/auth')
-# @basic_auth('Aladdin', 'open sesame')
-# def auth(headers, stream):
-#     return 200, {}, b'hello world'
+
+#  http -a ksj:1109 localhost:8086/auth
+#  Basic QWxhZGRpbjpvcGVuIHNlc2FtZQ==
+@server.route('/auth')
+@server.basic_auth('Aladdin', 'open sesame')
+def auth(headers, stream):
+    return 401, headers, 'hello world', '' 
+
 
 @server.route('/')
 def index(headers, stream):
-    print('/')
-    return 200, {}, MAIN_PAGE
+    return 200, headers, MAIN_PAGE, ''
 
 
 @server.route('/post', methods=['POST'])
 def index(headers, stream):
-    print('post')
-    size = int(headers.get('content-length', '0'))
-    body = b''
+    size = int(headers.get('Content-Length', '0'))
+    request_body = ''
     while size > 0:
         read_size = min(4096, size)
-        body += stream.read(read_size)
+        request_body += stream.read(read_size)
         size -= read_size
-    body = body.decode('iso-8859-1')
-    return 200, {}, POST_PAGE
+    return 200, headers, POST_PAGE, request_body
+# body를 읽음
 
 
 if __name__ == '__main__':
-    # logging.basicConfig(encoding='utf-8', level=logging.DEBUG)
-    server.run('localhost', 8081)
-
-# netstat -nap | grep 8080
-#  fuser -k -n tcp 8080
+    logging.basicConfig(level=logging.DEBUG)
+    print(f'PORT : {PORT}\r\n====================================================================')
+    server.run('localhost', PORT)

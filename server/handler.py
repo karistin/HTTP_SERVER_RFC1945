@@ -1,29 +1,37 @@
 from enum import Enum, auto
 from parser import is_token, is_char, is_ctl, is_sp, is_digit,\
-    is_text, is_lws, is_scheme, is_netloc, is_path, is_query, \
+    is_lws, is_scheme, is_netloc, is_path, is_query, \
     is_param, is_fragment
 from urllib.parse import urlparse
-from io import BytesIO
+
 
 class ParserState(Enum):
     Method = auto()
     RequestURI = auto()
     Version = auto()
+    Header = auto()
+    Body = auto() 
+    Status = auto()
+    Reason = auto()
 
+# self.Response = {
+# 'Response_Status_Line': auto(),
+# 'Response_headers': auto(),
+# 'Response_body': auto()
+# }
 
-def handler(fd):
-    
-    state = ParserState.Method
-    # print(type(fd))
-    # fd = BytesIO(fd)
+def handler(fd, state=ParserState.Method):
 
-    Request_Line = {'method' : "", 'uri' : "", 'version' : ""}
-    
+    Request_Line = {'method': "", 'path': "", 'version': ""}
+    header = {}
+    sub_ver_flag = True
+    field_name = ""
+    field_value = ""
+
     while True:
         try:
             octet = fd.read(1)
-            
-            
+            # print(octet.encode())
             if len(octet) == 0:
                 raise ValueError('invalid http msg')
             
@@ -38,9 +46,9 @@ def handler(fd):
             
             elif state == ParserState.RequestURI:
                 if is_char(octet) and not is_ctl(octet) and not is_sp(octet):
-                        Request_Line['uri'] += octet
+                    Request_Line['path'] += octet
                 elif octet == ' ':
-                    uri = urlparse(Request_Line['uri'])
+                    uri = urlparse(Request_Line['path'])
 
                     if len(uri.scheme) > 0:
                         for oct in uri.scheme:
@@ -52,34 +60,34 @@ def handler(fd):
                                     raise ValueError("Netloc is not correct")
                     # abs uri
                     elif len(uri.path) > 0 and uri.path.startswith('/'):
-                            for oct in uri.path:
-                                if not is_path(oct):
-                                    raise ValueError("Path is not correct")
-                            if len(uri.params) > 0:
-                                for oct in uri.params:
-                                    if not is_param(oct):
-                                        raise ValueError("params is not correct")
-                            if len(uri.query) > 0:
-                                for oct in uri.query:
-                                    if not is_query(oct):
-                                        raise ValueError("query is not correct")
+                        for oct in uri.path:
+                            if not is_path(oct):
+                                raise ValueError("Path is not correct")
+                        if len(uri.params) > 0:
+                            for oct in uri.params:
+                                if not is_param(oct):
+                                    raise ValueError("params is not correct")
+                        if len(uri.query) > 0:
+                            for oct in uri.query:
+                                if not is_query(oct):
+                                    raise ValueError("query is not correct")
                     else:
                         raise ValueError("uri is not exist")
                     if len(uri.fragment) > 0:
                         for oct in uri.fragment:
                             if not is_fragment(oct):
                                 raise ValueError("fragment is not correct")
-                    Request_Line['uri'] = uri
+                    Request_Line['path'] = uri
                     # Request_Line['uri'] = uri.geturl()
                     state = ParserState.Version
 
             elif state == ParserState.Version:
                 version = octet + fd.read(4)
-                # print(octet.encode('utf-8'))
+
                 if version == 'HTTP/':
                     Request_Line['version'] += version
                     sub_ver_flag = False
-                    while True:
+                    while state == ParserState.Version:
                         octet = fd.read(1)
                         # HTTP Version
 
@@ -91,18 +99,75 @@ def handler(fd):
                         elif sub_ver_flag and octet == '\r':
                             octet = fd.read(1)
                             if octet == '\n':
-                                return Request_Line
                                 state = ParserState.Header
-                                sub_ver_flag == True
-                                break
+                                return Request_Line
                             else:
                                 raise ValueError('invalid version')
                         elif octet == '\n':
-                            return Request_Line
-                            # temp
-                            # raise ValueError('invalid version')
+                            state = ParserState.Header
+
+            elif state == ParserState.Header:
+                if sub_ver_flag is True:
+                    if octet == ":":
+                        sub_ver_flag = False
+                        octet = fd.read(1)
+                        continue
+                    # if octet == "\r":
+                    #     octet = fd.read(1)
+                    #     if octet == "\n":
+                    #         state = ParserState.Body
+                    #         return header
+
+                    if octet == '\n':
+                        return Request_Line, header
+                        # return header
+
+                    if not is_token(octet):
+                        raise ValueError("invalid http msg")
+
+                    field_name += octet
+                elif sub_ver_flag is False:
+                    # if octet in (" "):
+                    #     octet = fd.read(1)
+                    #     continue
+
+                    # if octet == '\r':
+                    #     octet = fd.read(1)
+                    #     if octet == '\n':
+                    #         sub_ver_flag = True
+                    #         header[field_name] = field_value
+                    #         field_name = ""
+                    #         field_value = ""
+                    #         continue
+
+                    if octet == '\n':
+                        header[field_name] = field_value
+                        field_name = ""
+                        field_value = ""
+                        sub_ver_flag = True
+                        continue
+
+                    if is_ctl(octet):
+                        if not is_lws(octet):
+                            raise ValueError("invalid http msg")
+                    if is_char(octet):
+                        field_value += octet
             fd.flush()
 
         except KeyboardInterrupt:
             return ValueError('CTR C')
 
+
+def mk_Response(Response, states=ParserState.Version):
+    result = ''
+    for Res in Response.values():
+        if states == ParserState.Version:
+            result += '{0} {1} {2}\r\n'.format(Res['version'], Res['status_code'], Res['Reason'])
+            states = ParserState.Header
+        elif states == ParserState.Header:
+            for key, value in Res.items():
+                result += '{0}: {1}\r\n'.format(key, value)
+            states = ParserState.Body
+        elif states == ParserState.Body:
+            result += '\r\n {0}'.format(Res)
+    return result
