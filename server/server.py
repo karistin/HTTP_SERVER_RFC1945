@@ -25,8 +25,19 @@ class Server():
 
             while True:
                 client_socket, addr = server_socket.accept()
-                # request_queue = queue.Queue(maxsize=5)
-                
+                # with closing(client_socket):
+                request_queue = queue.Queue(maxsize= 5)
+                request_queue.put(client_socket)
+
+                def A():
+                    q = request_queue.get()
+                    while q:
+                        Server_network(self.routearr, self.www_auth, q).start()
+                    print(request_queue)
+                    print(thread_pool)
+                thread_pool = [threading.Thread(target= A) for _ in range(10)]
+                [t.start() for t in thread_pool]
+
                 """
                 request_queue = Queue()
                 thread_pool = [Thread(target=A) for _ in range(10)]
@@ -41,10 +52,13 @@ class Server():
                 request_queue <- client_socket
                 """
 
-                with closing(client_socket):
+                # with closing(client_socket):
                     # request_queue.append(Server_network(self.routearr, self.www_auth, client_socket))
-                    t1 = Server_network(self.routearr, self.www_auth, client_socket)
-                    t1.start()
+                    # t1 = Server_network(self.routearr, self.www_auth, client_socket)
+                    # thread_pool.append(t1)
+                    # if request_queue None:
+                    #     request_queue.append
+                    # t1.start()
 
                 # thread stop
 
