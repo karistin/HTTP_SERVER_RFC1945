@@ -35,6 +35,8 @@ def init_bean():
         di_val = [(hint_key, base_key, base_value) for base_key, base_value in base.items() if base_value == hint_value]
         # dic_val (인잭션 받는 클래스 , 인잭션 주는 클래스 , 인잭션 값 )
 
+    # https://technote.kr/248
+    print(di_val)
     for i in range(0, len(di_val)):
         (providers.get(di_val[i][0])).ball = providers.get(di_val[i][1])
 
