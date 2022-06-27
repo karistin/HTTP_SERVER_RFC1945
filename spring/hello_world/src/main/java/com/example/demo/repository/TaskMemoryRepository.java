@@ -1,6 +1,7 @@
 package com.example.demo.repository;
 
 import com.example.demo.domain.Task;
+import org.springframework.http.HttpStatus;
 
 import java.util.*;
 
@@ -25,5 +26,10 @@ public class TaskMemoryRepository implements TaskRepository{
     @Override
     public List<Task> findAll() {
         return new ArrayList<>(store.values());
+    }
+
+    public HttpStatus deleteId(Long id){
+        store.remove(id);
+        return HttpStatus.OK;
     }
 }

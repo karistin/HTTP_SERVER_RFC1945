@@ -37,6 +37,9 @@ public class GreetingController {
         return task.getTaskId();
     }
 
+//    @DeleteMapping()
+
+
 //    @PutMapping()
 //    @ResponseStatus
 //curl localhost:8888/tasks  -v -X POST -H Content-Type:application/json -d  "{"title": "string","contents":"123123"}"
