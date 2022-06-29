@@ -6,7 +6,7 @@ from server import Server
 
 
 server = Server()
-PORT = 8080
+PORT = 8082
 
 
 #  http -a ksj:1109 localhost:8086/auth
