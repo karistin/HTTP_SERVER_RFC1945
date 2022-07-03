@@ -11,6 +11,7 @@ public class TaskMemoryRepository implements TaskRepository{
     private static long sequence = 0L;
 
 
+
     @Override
     public Task save(Task task) {
         task.setTaskId(++sequence);
@@ -28,8 +29,23 @@ public class TaskMemoryRepository implements TaskRepository{
         return new ArrayList<>(store.values());
     }
 
-    public HttpStatus deleteId(Long id){
-        store.remove(id);
-        return HttpStatus.OK;
+    public boolean deleteId(Long id){
+        if (findId(id).isPresent())
+        {
+            store.remove(id);
+            return true;
+        }
+        else{
+            return false;
+        }
+    }
+
+    public boolean amendTask(Long id, Task task){
+        task.setTaskId(id);
+        if (store.replace(id, task) == null)
+        {
+            return false;
+        }
+        return true;
     }
 }
